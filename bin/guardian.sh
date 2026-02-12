@@ -51,6 +51,65 @@ check_gateway() {
     fi
 }
 
+# Deep health check - tests connectivity (optional)
+# Rate-limited to avoid Discord API throttling
+check_connectivity() {
+    # Skip if deep checks disabled
+    if [[ "${DEEP_HEALTH_CHECK:-false}" != "true" ]]; then
+        return 0
+    fi
+    
+    local timeout="${CONNECTIVITY_TIMEOUT:-5}"
+    local last_check_file="${LOG_DIR}/.last_connectivity_check"
+    local min_interval="${CONNECTIVITY_CHECK_INTERVAL:-300}"  # Default: 5 minutes
+    local now=$(date +%s)
+    
+    # Rate limiting - only check every N seconds
+    if [[ -f "$last_check_file" ]]; then
+        local last_check=$(cat "$last_check_file" 2>/dev/null || echo 0)
+        local elapsed=$((now - last_check))
+        if [[ $elapsed -lt $min_interval ]]; then
+            # Too soon, skip check
+            return 0
+        fi
+    fi
+    
+    # Update timestamp
+    echo "$now" > "$last_check_file"
+    
+    log "INFO" "Running deep connectivity check"
+    
+    # Check 1: Local gateway port
+    if command -v nc &> /dev/null; then
+        if ! nc -z 127.0.0.1 18789 -w "$timeout" 2>/dev/null; then
+            log "WARN" "Gateway port 18789 not responding (WebSocket probe failed)"
+            return 1
+        fi
+    elif command -v curl &> /dev/null; then
+        # Fallback using curl to localhost
+        if ! curl -s --max-time "$timeout" http://127.0.0.1:18789/ > /dev/null 2>&1; then
+            log "WARN" "Gateway port 18789 not responding"
+            return 1
+        fi
+    fi
+    
+    # Check 2: Discord API (rate limited - only every 5 min default)
+    if [[ -n "${DISCORD_BOT_TOKEN:-}" ]]; then
+        # Only check Discord if we have a bot token
+        if command -v curl &> /dev/null; then
+            if ! curl -s --max-time "$timeout" \
+                -H "Authorization: Bot ${DISCORD_BOT_TOKEN}" \
+                https://discord.com/api/v10/gateway > /dev/null 2>&1; then
+                log "WARN" "Discord API unreachable (check network/bot token)"
+                return 1
+            fi
+        fi
+    fi
+    
+    log "INFO" "Deep connectivity check passed"
+    return 0
+}
+
 # Get gateway status details
 get_gateway_status() {
     local pid=$(pgrep -x "openclaw-gateway" 2>/dev/null || echo "not running")
@@ -219,7 +278,24 @@ health_check() {
         log "INFO" "Gateway is healthy"
     fi
     
-    # Check 2: Recent errors in session (only if gateway is up)
+    # Check 2: Connectivity (deep check, only if process is running)
+    if [[ "$status" == "healthy" ]] && ! check_connectivity; then
+        log "WARN" "Gateway process running but connectivity issues detected"
+        status="recovering"
+        actions_taken+=("connectivity_issue")
+        
+        # Try restart to fix connectivity
+        if restart_gateway; then
+            actions_taken+=("restart_fixed_connectivity")
+            sleep 5
+        else
+            actions_taken+=("restart_failed")
+            wake_agent "Gateway connectivity failed and restart failed" "Network or service issue"
+            return 1
+        fi
+    fi
+    
+    # Check 3: Recent errors in session (only if gateway is up)
     if [[ "$status" == "healthy" ]] && check_recent_errors; then
         log "WARN" "Recent errors detected in agent session"
         actions_taken+=("errors_detected")
@@ -268,6 +344,11 @@ show_status() {
     echo "  Health check interval: ${HEALTH_CHECK_INTERVAL}s"
     echo "  Wake on error: $WAKE_ON_ERROR"
     echo "  Notify on success: $NOTIFY_ON_SUCCESS"
+    echo "  Deep health check: ${DEEP_HEALTH_CHECK:-false}"
+    if [[ "${DEEP_HEALTH_CHECK:-false}" == "true" ]]; then
+        echo "  Connectivity timeout: ${CONNECTIVITY_TIMEOUT:-5}s"
+        echo "  Connectivity interval: ${CONNECTIVITY_CHECK_INTERVAL:-300}s"
+    fi
     echo ""
     
     echo "📁 Log file: $LOG_FILE"
@@ -276,6 +357,18 @@ show_status() {
         echo ""
         echo "📝 Recent activity (last 5 entries):"
         tail -5 "$LOG_FILE" | sed 's/^/  /'
+    fi
+    
+    # Show last connectivity check if deep checks enabled
+    if [[ "${DEEP_HEALTH_CHECK:-false}" == "true" ]]; then
+        local last_check_file="${LOG_DIR}/.last_connectivity_check"
+        if [[ -f "$last_check_file" ]]; then
+            local last_check=$(cat "$last_check_file" 2>/dev/null)
+            local now=$(date +%s)
+            local elapsed=$((now - last_check))
+            echo ""
+            echo "🔌 Last connectivity check: ${elapsed}s ago"
+        fi
     fi
 }
 

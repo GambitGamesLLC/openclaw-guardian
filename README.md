@@ -198,6 +198,28 @@ Guardian looks for these patterns in recent agent session logs:
 
 You can customize these patterns in the config.
 
+### Deep Health Checks (Optional)
+
+For more comprehensive monitoring, enable **deep health checks**:
+
+| Check | What It Tests | Rate Limit |
+|-------|--------------|------------|
+| Process | `pgrep openclaw-gateway` | Every 2 min |
+| WebSocket | `nc -z 127.0.0.1 18789` | Every 5 min (configurable) |
+| Discord API | `curl` to Discord endpoint | Every 5 min (configurable) |
+
+**Why rate limiting?** Discord API has rate limits. We check connectivity every 5 minutes by default to avoid hitting limits.
+
+**When to enable:** If you experience "gateway running but Discord connection failed" issues (like Cookie's error).
+
+**Enable in config:**
+```bash
+# Enable deep checks (default: false)
+DEEP_HEALTH_CHECK=true
+CONNECTIVITY_TIMEOUT=5
+CONNECTIVITY_CHECK_INTERVAL=300  # 5 minutes
+```
+
 ## Configuration
 
 Create `config/guardian.conf`:
@@ -212,6 +234,12 @@ HEALTH_CHECK_INTERVAL=120     # Seconds between checks
 NOTIFY_ON_SUCCESS=false       # Desktop notify even on success
 WAKE_ON_ERROR=true           # Wake agent when errors detected
 AGENT_NAME="Chip"            # Name for notifications
+
+# Deep health checks (optional - see README for details)
+DEEP_HEALTH_CHECK=false      # Enable connectivity testing
+CONNECTIVITY_TIMEOUT=5       # Seconds to wait for connections
+CONNECTIVITY_CHECK_INTERVAL=300  # Min seconds between checks (5 min)
+# DISCORD_BOT_TOKEN=""        # Optional: enables Discord API check
 
 # Advanced
 ERROR_CHECK_WINDOW=10         # Lines of session to check

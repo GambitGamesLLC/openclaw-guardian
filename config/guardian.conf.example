@@ -17,6 +17,23 @@
 # HEALTH_CHECK_INTERVAL=120
 
 # ═══════════════════════════════════════════════════════════════
+# Deep Health Check (Connectivity Testing)
+# ═══════════════════════════════════════════════════════════════
+
+# Enable deep connectivity checks (tests WebSocket + Discord API)
+# WARNING: This makes API calls - enable with care to avoid rate limits
+# DEEP_HEALTH_CHECK=false
+
+# Seconds to wait for connectivity checks (default: 5)
+# CONNECTIVITY_TIMEOUT=5
+
+# Minimum seconds between connectivity checks (rate limiting, default: 300 = 5 min)
+# CONNECTIVITY_CHECK_INTERVAL=300
+
+# Discord bot token for API health checks (optional, enables Discord API test)
+# DISCORD_BOT_TOKEN=""
+
+# ═══════════════════════════════════════════════════════════════
 # Notification Settings
 # ═══════════════════════════════════════════════════════════════
 
