@@ -40,19 +40,14 @@ log() {
 }
 
 # Check if OpenClaw gateway is running
-# Uses 'openclaw gateway status' for proper detection
+# Uses pgrep as primary check (reliable)
+# openclaw gateway status returns 0 even when stopped, so we don't use it
 check_gateway() {
-    if command -v openclaw &> /dev/null; then
-        # Use OpenClaw's built-in status check
-        openclaw gateway status &> /dev/null
-        return $?
+    # Primary check: process exists
+    if pgrep -f "openclaw-gateway" > /dev/null 2>&1; then
+        return 0
     else
-        # Fallback to process check
-        if pgrep -f "openclaw-gateway" > /dev/null 2>&1; then
-            return 0
-        else
-            return 1
-        fi
+        return 1
     fi
 }
 
