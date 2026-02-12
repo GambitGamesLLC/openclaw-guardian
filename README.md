@@ -60,7 +60,7 @@ If you've ever had your OpenClaw agent session freeze mid-conversation, you know
 ### Prerequisites
 
 - Linux with systemd
-- OpenClaw installed
+- OpenClaw installed (with working `openclaw gateway start`)
 - Bash 4.0+
 - `notify-send` (optional, for desktop notifications)
 
@@ -83,20 +83,22 @@ cd openclaw-guardian
 If you prefer manual setup:
 
 ```bash
-# Copy systemd services
-sudo cp systemd/*.service /etc/systemd/system/
-sudo cp systemd/*.timer /etc/systemd/system/
+# 1. Ensure OpenClaw gateway is managed by OpenClaw itself
+# (Not by systemd - OpenClaw has built-in gateway management)
+openclaw gateway start
 
-# Customize for your user
-sudo sed -i 's/%I/your-username/g' /etc/systemd/system/openclaw-*.service
+# 2. Copy guardian timer service
+sudo cp systemd/openclaw-guardian.service /etc/systemd/system/
+sudo cp systemd/openclaw-guardian.timer /etc/systemd/system/
 
-# Reload and enable
+# 3. Customize for your user
+sudo sed -i 's/%I/your-username/g' /etc/systemd/system/openclaw-guardian.service
+
+# 4. Reload and enable
 sudo systemctl daemon-reload
-sudo systemctl enable openclaw-gateway@your-username.service
 sudo systemctl enable openclaw-guardian.timer
 
-# Start services
-sudo systemctl start openclaw-gateway@your-username.service
+# 5. Start the timer
 sudo systemctl start openclaw-guardian.timer
 ```
 

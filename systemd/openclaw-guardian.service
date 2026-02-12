@@ -1,14 +1,15 @@
 [Unit]
 Description=OpenClaw Guardian - Health Monitor and Auto-Recovery
 Documentation=https://github.com/yourusername/openclaw-guardian
-After=network.target openclaw-gateway.service
-Wants=openclaw-gateway.service
+After=network.target
+# Note: OpenClaw gateway is managed by 'openclaw gateway start' command
+# not by this service. We just need network to be up.
 
 [Service]
 Type=oneshot
 User=%I
 Environment="HOME=/home/%I"
-Environment="PATH=/usr/local/bin:/usr/bin:/bin:/home/%I/.local/bin"
+Environment="PATH=/home/%I/.nvm/versions/node/v25.4.0/bin:/usr/local/bin:/usr/bin:/bin:/home/%I/.local/bin"
 
 # Run the guardian check
 ExecStart=/home/%I/Documents/GitHub/openclaw-guardian/bin/guardian.sh check

@@ -58,13 +58,13 @@ mkdir -p "$HOME/.local/share/openclaw-guardian"
 # Install systemd service files (requires sudo)
 log_info "Installing systemd service files..."
 
-# Copy service files to systemd
-sudo cp "$SCRIPT_DIR/systemd/openclaw-gateway@.service" /etc/systemd/system/
+# Copy guardian service files to systemd
+# Note: We don't install openclaw-gateway@.service because OpenClaw
+# manages its own gateway via 'openclaw gateway start' command
 sudo cp "$SCRIPT_DIR/systemd/openclaw-guardian.service" /etc/systemd/system/
 sudo cp "$SCRIPT_DIR/systemd/openclaw-guardian.timer" /etc/systemd/system/
 
 # Replace user placeholder in service files
-sudo sed -i "s/%I/$TARGET_USER/g" /etc/systemd/system/openclaw-gateway@.service
 sudo sed -i "s/%I/$TARGET_USER/g" /etc/systemd/system/openclaw-guardian.service
 
 # Update paths in service files to match actual install location
@@ -85,31 +85,25 @@ fi
 log_info ""
 log_info "Systemd services installed. Choose setup option:"
 echo ""
-echo "1) Enable gateway auto-start only (recommended for beginners)"
-echo "2) Enable gateway + guardian health monitoring (recommended)"
-echo "3) Manual setup - don't enable anything"
+echo "1) Enable guardian health monitoring only (recommended)"
+echo "2) Manual setup - don't enable anything"
 echo ""
-read -p "Enter choice [1-3]: " choice
+read -p "Enter choice [1-2]: " choice
 
 case $choice in
     1)
-        log_info "Enabling OpenClaw Gateway auto-start..."
-        sudo systemctl enable "openclaw-gateway@$TARGET_USER.service"
-        sudo systemctl start "openclaw-gateway@$TARGET_USER.service"
-        log_info "Gateway service enabled and started"
+        log_info "Enabling OpenClaw Guardian monitoring..."
+        log_info "Note: OpenClaw gateway should be started with 'openclaw gateway start'"
+        sudo systemctl enable openclaw-guardian.timer
+        sudo systemctl start openclaw-guardian.timer
+        log_info "Guardian timer enabled and started"
+        log_info ""
+        log_info "Make sure OpenClaw gateway is running:"
+        echo "  openclaw gateway start"
         ;;
     2)
-        log_info "Enabling OpenClaw Gateway + Guardian monitoring..."
-        sudo systemctl enable "openclaw-gateway@$TARGET_USER.service"
-        sudo systemctl enable openclaw-guardian.timer
-        sudo systemctl start "openclaw-gateway@$TARGET_USER.service"
-        sudo systemctl start openclaw-guardian.timer
-        log_info "All services enabled and started"
-        ;;
-    3)
         log_info "Skipping service enablement"
         log_info "You can manually enable services later with:"
-        echo "  sudo systemctl enable openclaw-gateway@$TARGET_USER.service"
         echo "  sudo systemctl enable openclaw-guardian.timer"
         ;;
     *)
@@ -147,9 +141,10 @@ echo "Quick Commands:"
 echo "  Check status:    $SCRIPT_DIR/bin/guardian.sh status"
 echo "  Manual check:    $SCRIPT_DIR/bin/guardian.sh check"
 echo "  Force recovery:  $SCRIPT_DIR/bin/guardian.sh recover"
+echo "  Gateway status:  openclaw gateway status"
+echo "  Start gateway:   openclaw gateway start"
 echo ""
 echo "Systemd Commands:"
-echo "  View gateway:    sudo systemctl status openclaw-gateway@$TARGET_USER"
 echo "  View guardian:   sudo systemctl status openclaw-guardian"
 echo "  View timer:      sudo systemctl list-timers openclaw-guardian"
 echo ""
@@ -161,7 +156,8 @@ echo "Configuration:"
 echo "  Edit settings:   $SCRIPT_DIR/config/guardian.conf"
 echo ""
 echo "Next Steps:"
-echo "  1. Review and customize $SCRIPT_DIR/config/guardian.conf"
-echo "  2. Test with: $SCRIPT_DIR/bin/guardian.sh check"
-echo "  3. Check logs: sudo journalctl -u openclaw-guardian -f"
+echo "  1. Ensure OpenClaw gateway is running: openclaw gateway start"
+echo "  2. Review and customize $SCRIPT_DIR/config/guardian.conf"
+echo "  3. Test with: $SCRIPT_DIR/bin/guardian.sh check"
+echo "  4. Check logs: sudo journalctl -u openclaw-guardian -f"
 echo ""

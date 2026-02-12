@@ -40,11 +40,19 @@ log() {
 }
 
 # Check if OpenClaw gateway is running
+# Uses 'openclaw gateway status' for proper detection
 check_gateway() {
-    if pgrep -x "openclaw-gateway" > /dev/null 2>&1; then
-        return 0
+    if command -v openclaw &> /dev/null; then
+        # Use OpenClaw's built-in status check
+        openclaw gateway status &> /dev/null
+        return $?
     else
-        return 1
+        # Fallback to process check
+        if pgrep -f "openclaw-gateway" > /dev/null 2>&1; then
+            return 0
+        else
+            return 1
+        fi
     fi
 }
 
@@ -62,6 +70,7 @@ get_gateway_status() {
 }
 
 # Attempt to restart the gateway
+# Uses OpenClaw's built-in gateway management
 restart_gateway() {
     local attempt=1
     
@@ -70,26 +79,42 @@ restart_gateway() {
     while [[ $attempt -le $MAX_RESTART_ATTEMPTS ]]; do
         log "INFO" "Restart attempt $attempt/$MAX_RESTART_ATTEMPTS"
         
-        # Try graceful restart
+        # Use OpenClaw's built-in gateway management
         if command -v openclaw &> /dev/null; then
+            # First try restart (if running)
             openclaw gateway restart 2>&1 | tee -a "$LOG_FILE" || true
+            
+            # Wait for restart
+            sleep "$RESTART_DELAY"
+            
+            # Check if it's back
+            if check_gateway; then
+                log "INFO" "Gateway restart successful on attempt $attempt"
+                
+                if [[ "$NOTIFY_ON_SUCCESS" == "true" ]]; then
+                    notify "Gateway Recovered" "OpenClaw gateway restarted successfully after $attempt attempt(s)"
+                fi
+                
+                return 0
+            fi
+            
+            # If restart didn't work, try explicit start
+            log "INFO" "Restart didn't bring gateway up, trying explicit start"
+            openclaw gateway start 2>&1 | tee -a "$LOG_FILE" || true
         else
-            # Fallback: kill and restart
-            pkill -x "openclaw-gateway" 2>/dev/null || true
-            sleep 2
-            # Note: This requires manual start if openclaw command not available
-            log "WARN" "openclaw command not found. Manual restart may be required."
+            log "ERROR" "openclaw command not found in PATH"
+            notify "Gateway Recovery Failed" "openclaw command not found. Please check installation." "critical"
+            return 1
         fi
         
-        # Wait for restart
+        # Wait and check
         sleep "$RESTART_DELAY"
         
-        # Check if it's back
         if check_gateway; then
-            log "INFO" "Gateway restart successful on attempt $attempt"
+            log "INFO" "Gateway start successful on attempt $attempt"
             
             if [[ "$NOTIFY_ON_SUCCESS" == "true" ]]; then
-                notify "Gateway Recovered" "OpenClaw gateway restarted successfully after $attempt attempt(s)"
+                notify "Gateway Recovered" "OpenClaw gateway started successfully after $attempt attempt(s)"
             fi
             
             return 0
