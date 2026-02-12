@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenClaw Guardian Health Check Timer
+Documentation=https://github.com/yourusername/openclaw-guardian
+Requires=openclaw-guardian.service
+
+[Timer]
+# Run health check every 2 minutes
+OnBootSec=1min
+OnUnitActiveSec=2min
+
+# Randomize slightly to avoid thundering herd
+RandomizedDelaySec=10
+
+# Ensure we catch up if system was asleep
+Persistent=true
+
+[Install]
+WantedBy=timers.target

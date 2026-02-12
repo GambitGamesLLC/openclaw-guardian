@@ -1,0 +1,36 @@
+[Unit]
+Description=OpenClaw Gateway
+Documentation=https://docs.openclaw.ai
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%I
+Environment="HOME=/home/%I"
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="OPENCLAW_CONFIG_DIR=/home/%I/.openclaw"
+
+# Check if openclaw is available
+ExecStartPre=/bin/sh -c 'command -v openclaw || (echo "openclaw not found in PATH" && exit 1)'
+
+# Start the gateway
+ExecStart=/usr/local/bin/openclaw gateway start
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Graceful shutdown
+TimeoutStopSec=30
+KillSignal=SIGTERM
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw-gateway
+
+[Install]
+WantedBy=multi-user.target

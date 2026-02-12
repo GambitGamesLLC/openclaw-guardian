@@ -1,0 +1,54 @@
+# OpenClaw Guardian Configuration
+# 
+# Copy this file to config/guardian.conf and customize as needed
+# Comments start with #
+
+# ═══════════════════════════════════════════════════════════════
+# Gateway Health Check Settings
+# ═══════════════════════════════════════════════════════════════
+
+# Maximum number of restart attempts before giving up
+# MAX_RESTART_ATTEMPTS=3
+
+# Seconds to wait between restart attempts
+# RESTART_DELAY=10
+
+# Seconds between health checks (when run via cron/systemd timer)
+# HEALTH_CHECK_INTERVAL=120
+
+# ═══════════════════════════════════════════════════════════════
+# Notification Settings
+# ═══════════════════════════════════════════════════════════════
+
+# Send desktop notification even on successful recovery
+# (false = only notify on failures)
+# NOTIFY_ON_SUCCESS=false
+
+# Wake up the agent (send message) when errors are detected
+# This reconnects the session but costs tokens
+# WAKE_ON_ERROR=true
+
+# Name of the agent (used in notifications)
+# AGENT_NAME=Chip
+
+# Number of recent session lines to check for errors
+# ERROR_CHECK_WINDOW=10
+
+# ═══════════════════════════════════════════════════════════════
+# Advanced Settings
+# ═══════════════════════════════════════════════════════════════
+
+# Custom log directory (default: /tmp/openclaw-guardian)
+# LOG_DIR=/var/log/openclaw-guardian
+
+# Error patterns to look for in agent session (regex)
+# ERROR_PATTERNS="error|failed|tool failed|execution failed"
+
+# ═══════════════════════════════════════════════════════════════
+# Discord Notifications (Optional)
+# ═══════════════════════════════════════════════════════════════
+
+# Uncomment and configure to send Discord notifications
+# DISCORD_WEBHOOK_URL=""
+# DISCORD_CHANNEL=""
+# DISCORD_BOT_TOKEN=""
