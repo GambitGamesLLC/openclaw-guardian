@@ -1,71 +1,60 @@
 # OpenClaw Guardian Configuration
 # 
 # Copy this file to config/guardian.conf and customize as needed
-# Comments start with #
+# This is the active configuration file for Chip's guardian
 
 # ═══════════════════════════════════════════════════════════════
 # Gateway Health Check Settings
 # ═══════════════════════════════════════════════════════════════
 
 # Maximum number of restart attempts before giving up
-# MAX_RESTART_ATTEMPTS=3
+MAX_RESTART_ATTEMPTS=3
 
 # Seconds to wait between restart attempts
-# RESTART_DELAY=10
+RESTART_DELAY=10
 
 # Seconds between health checks (when run via cron/systemd timer)
-# HEALTH_CHECK_INTERVAL=120
+HEALTH_CHECK_INTERVAL=120
 
 # ═══════════════════════════════════════════════════════════════
-# Deep Health Check (Connectivity Testing)
+# Deep Health Check (Connectivity Testing) - ENABLED
 # ═══════════════════════════════════════════════════════════════
 
 # Enable deep connectivity checks (tests WebSocket + Discord API)
-# WARNING: This makes API calls - enable with care to avoid rate limits
-# DEEP_HEALTH_CHECK=false
+DEEP_HEALTH_CHECK=true
 
 # Seconds to wait for connectivity checks (default: 5)
-# CONNECTIVITY_TIMEOUT=5
+CONNECTIVITY_TIMEOUT=5
 
 # Minimum seconds between connectivity checks (rate limiting, default: 300 = 5 min)
-# CONNECTIVITY_CHECK_INTERVAL=300
+CONNECTIVITY_CHECK_INTERVAL=300
 
 # Discord bot token for API health checks (optional, enables Discord API test)
-# DISCORD_BOT_TOKEN=""
+# Using orchestrator token for Discord API check
+DISCORD_BOT_TOKEN="<YOUR-DISCORD-BOT-TOKEN>"
 
 # ═══════════════════════════════════════════════════════════════
 # Notification Settings
 # ═══════════════════════════════════════════════════════════════
 
 # Send desktop notification even on successful recovery
-# (false = only notify on failures)
-# NOTIFY_ON_SUCCESS=false
+NOTIFY_ON_SUCCESS=false
 
 # Wake up the agent (send message) when errors are detected
-# This reconnects the session but costs tokens
-# WAKE_ON_ERROR=true
+WAKE_ON_ERROR=true
 
 # Name of the agent (used in notifications)
-# AGENT_NAME=Chip
+AGENT_NAME="Chip"
 
 # Number of recent session lines to check for errors
-# ERROR_CHECK_WINDOW=10
+ERROR_CHECK_WINDOW=10
 
 # ═══════════════════════════════════════════════════════════════
 # Advanced Settings
 # ═══════════════════════════════════════════════════════════════
 
 # Custom log directory (default: /tmp/openclaw-guardian)
-# LOG_DIR=/var/log/openclaw-guardian
+# LOG_DIR=/var/log/guardian
 
 # Error patterns to look for in agent session (regex)
 # ERROR_PATTERNS="error|failed|tool failed|execution failed"
-
-# ═══════════════════════════════════════════════════════════════
-# Discord Notifications (Optional)
-# ═══════════════════════════════════════════════════════════════
-
-# Uncomment and configure to send Discord notifications
-# DISCORD_WEBHOOK_URL=""
-# DISCORD_CHANNEL=""
-# DISCORD_BOT_TOKEN=""

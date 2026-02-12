@@ -1,0 +1,3 @@
+config/guardian.conf
+*.log
+.last_connectivity_check

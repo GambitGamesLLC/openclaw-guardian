@@ -72,11 +72,44 @@ cd ~/Documents/GitHub
 git clone https://github.com/yourusername/openclaw-guardian.git
 cd openclaw-guardian
 
+# Create your configuration from the example
+cp config/guardian.conf.example config/guardian.conf
+
+# Edit the configuration (add your Discord bot token for deep checks)
+nano config/guardian.conf
+
 # Run the installer
 ./install.sh
 
 # Follow the prompts to enable services
 ```
+
+### Configuration Setup
+
+**IMPORTANT:** The `config/guardian.conf` file contains sensitive information (Discord bot tokens) and is **not** included in the git repository for security reasons.
+
+**To set up:**
+
+1. **Copy the example config:**
+   ```bash
+   cp config/guardian.conf.example config/guardian.conf
+   ```
+
+2. **Edit the config and add your Discord bot token:**
+   ```bash
+   nano config/guardian.conf
+   ```
+   
+   Find this line:
+   ```bash
+   DISCORD_BOT_TOKEN="<YOUR-DISCORD-BOT-TOKEN>"
+   ```
+   
+   Replace with your actual token from the [Discord Developer Portal](https://discord.com/developers/applications)
+
+3. **The `config/guardian.conf` file is gitignored** - your token will never be committed
+
+**Note:** If you don't add a Discord token, deep health checks will still work for local WebSocket testing, but Discord API connectivity checks will be skipped.
 
 ### Manual Setup
 
