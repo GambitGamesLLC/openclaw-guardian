@@ -160,8 +160,8 @@ sudo journalctl -u openclaw-gateway@your-username -f
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              OpenClaw Guardian Check                        │
-│  1. Is gateway running? (pgrep)                            │
-│  2. Any recent errors in session? (grep logs)              │
+│  1. Is gateway running? (pgrep)                             │
+│  2. Any recent errors in session? (grep logs)               │
 └──────────┬──────────────────────────────┬───────────────────┘
            │                              │
      ┌─────▼─────┐                  ┌─────▼─────┐
@@ -178,10 +178,10 @@ sudo journalctl -u openclaw-gateway@your-username -f
               └─────┬─────┘         └─────┬─────┘         └─────┬─────┘
                     │                     │                     │
                     ▼                     ▼                     ▼
-           ┌──────────────┐       ┌──────────────┐      ┌──────────────┐
-           │ Auto-restart │       │ Gentle cycle │      │ Wake agent   │
-           │ (silent)     │       │ + context    │      │ + notify user│
-           └──────────────┘       └──────────────┘      └──────────────┘
+           ┌──────────────┐       ┌──────────────┐     ┌──────────────┐
+           │ Auto-restart │       │ Gentle cycle │     │ Wake agent   │
+           │ (silent)     │       │ + context    │     │ + notify user│
+           └──────────────┘       └──────────────┘     └──────────────┘
 ```
 
 ### Error Detection
