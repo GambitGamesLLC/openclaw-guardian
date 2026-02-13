@@ -231,9 +231,14 @@ Guardian looks for these patterns in recent agent session logs:
 
 You can customize these patterns in the config.
 
-### Deep Health Checks (Optional)
+### Deep Health Checks (Recommended for Orchestrators)
 
-For more comprehensive monitoring, enable **deep health checks**:
+**For orchestration agents, deep health checks are STRONGLY RECOMMENDED.**
+
+They catch Discord/WebSocket errors like:
+- `"Expected ',' or '}' after property value in JSON" ` — WebSocket corruption
+- `"Discord connection failed"` — API connectivity issues
+- `Gateway running but Discord unresponsive` — Partial failures
 
 | Check | What It Tests | Rate Limit |
 |-------|--------------|------------|
@@ -241,16 +246,21 @@ For more comprehensive monitoring, enable **deep health checks**:
 | WebSocket | `nc -z 127.0.0.1 18789` | Every 5 min (configurable) |
 | Discord API | `curl` to Discord endpoint | Every 5 min (configurable) |
 
-**Why rate limiting?** Discord API has rate limits. We check connectivity every 5 minutes by default to avoid hitting limits.
+**Why enable for orchestrators?**
+- Discord is your message bus — if it's down, workers can't communicate
+- JSON parsing errors can leave sessions in a broken state
+- Deep checks detect issues before they cascade
 
-**When to enable:** If you experience "gateway running but Discord connection failed" issues (like Cookie's error).
-
-**Enable in config:**
+**Configuration (set these in your guardian.conf):**
 ```bash
-# Enable deep checks (default: false)
+# Enable deep checks (default: true for orchestrators)
 DEEP_HEALTH_CHECK=true
 CONNECTIVITY_TIMEOUT=5
 CONNECTIVITY_CHECK_INTERVAL=300  # 5 minutes
+
+# Optional but recommended: Add your Discord bot token
+# This enables actual Discord API connectivity testing
+DISCORD_BOT_TOKEN="your-bot-token-here"
 ```
 
 ## Configuration

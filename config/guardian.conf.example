@@ -17,10 +17,12 @@ RESTART_DELAY=10
 HEALTH_CHECK_INTERVAL=120
 
 # ═══════════════════════════════════════════════════════════════
-# Deep Health Check (Connectivity Testing) - ENABLED
+# Deep Health Check (Connectivity Testing) - ENABLED BY DEFAULT
 # ═══════════════════════════════════════════════════════════════
 
 # Enable deep connectivity checks (tests WebSocket + Discord API)
+# This catches Discord connection failures, WebSocket errors, and gateway issues
+# RECOMMENDED: Keep enabled for orchestration agents
 DEEP_HEALTH_CHECK=true
 
 # Seconds to wait for connectivity checks (default: 5)
