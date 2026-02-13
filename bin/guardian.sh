@@ -20,6 +20,18 @@ if [[ -f "$CONFIG_FILE" ]]; then
     source "$CONFIG_FILE"
 fi
 
+# Load tokens from tokens.txt (if exists)
+TOKENS_FILE="${REPO_DIR}/config/tokens.txt"
+if [[ -f "$TOKENS_FILE" ]]; then
+    while IFS='=' read -r key value; do
+        # Skip comments and empty lines
+        [[ "$key" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "$key" ]] && continue
+        # Export the token
+        export "$key=$value"
+    done < "$TOKENS_FILE"
+fi
+
 # Defaults (can be overridden in config)
 MAX_RESTART_ATTEMPTS="${MAX_RESTART_ATTEMPTS:-3}"
 RESTART_DELAY="${RESTART_DELAY:-10}"
